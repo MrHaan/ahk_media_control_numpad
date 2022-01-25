@@ -5,6 +5,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ; global variables
 output_audio_device_number := 1
+output_device_id:= None
 
 ; enable scroll lock at boot (or when this script is first enabled)
 if not GetKeyState("ScrollLock", "T"){
@@ -13,8 +14,8 @@ if not GetKeyState("ScrollLock", "T"){
 
 ;hotkeys
 
-;numlock on
-Numpad5::
+NumpadClear::   ; numlock off
+Numpad5::       ;numlock on
 if GetKeyState("ScrollLock", "T"){
     Send {Media_Play_Pause}
 }
@@ -22,6 +23,8 @@ else{
     Send, 5
 }
 return
+
+NumpadRight::
 Numpad6::
 if GetKeyState("ScrollLock", "T"){
     Send {Media_Next}
@@ -31,6 +34,7 @@ else{
 }
 return
 
+NumpadLeft::
 Numpad4::
 if GetKeyState("ScrollLock", "T"){
     Send {Media_Prev}
@@ -40,6 +44,7 @@ else{
 }
 return
 
+NumpadUp::
 Numpad8::
 if GetKeyState("ScrollLock", "T"){
     Send {Volume_Up 1}
@@ -50,6 +55,7 @@ else{
 }
 return
 
+NumpadDown::
 Numpad2::
 if GetKeyState("ScrollLock", "T"){
     Send {Volume_Down 1}
@@ -60,6 +66,7 @@ else{
 }
 return
 
+NumpadDel::
 NumpadDot::
 if GetKeyState("ScrollLock", "T"){
     Send {Volume_Mute} 
@@ -69,6 +76,7 @@ else{
 }
 return
 
+NumpadIns::
 Numpad0::
     if GetKeyState("ScrollLock", "T"){    
         toggle_mic_mute()
@@ -78,6 +86,7 @@ Numpad0::
     }
     return
 
+NumpadPgdn::
 Numpad3::
 if GetKeyState("ScrollLock", "T"){
     switch_audio_output_device()
@@ -86,82 +95,6 @@ else{
     Send {NumpadClear}
 }
 return
-
-
-;numlock off
-NumpadClear::
-if GetKeyState("ScrollLock", "T"){
-    Send {Media_Play_Pause}
-}
-else{
-    Send {NumpadClear}
-}
-return
-
-NumpadRight::
-if GetKeyState("ScrollLock", "T"){
-    Send {Media_Next}
-}
-else{
-    Send {NumpadRight}
-}
-return
-
-NumpadLeft::
-if GetKeyState("ScrollLock", "T"){
-    Send {Media_Prev}
-}
-else{
-    Send {NumpadLeft}
-}
-return
-
-NumpadUp::
-if GetKeyState("ScrollLock", "T"){
-    Send {Volume_Up 1}
-    Sleep, 69
-    }
-else{
-    Send {NumpadUp}
-}
-return
-
-NumpadDown::
-if GetKeyState("ScrollLock", "T"){
-    Send {Volume_Down 1}
-    Sleep, 69
-    }
-else{
-    Send {NumpadDown}
-}
-return
-
-NumpadDel::
-if GetKeyState("ScrollLock", "T"){
-    Send {Volume_Mute} 
-    }
-else{
-    Send {NumpadDel}
-}
-return
-
-NumpadIns::
-    if GetKeyState("ScrollLock", "T"){    
-        toggle_mic_mute()
-    }
-    else{
-    Send, 0
-    }
-    return
-
-NumpadPgdn::
-    if GetKeyState("ScrollLock", "T"){
-        switch_audio_output_device()
-    }
-    else{
-        Send {NumpadClear}
-    }
-    return
 
 ; functions
 toggle_mic_mute(){
@@ -210,11 +143,12 @@ toggle_mic_mute(){
 
 switch_audio_output_device(){
     ;from: https://www.autohotkey.com/boards/viewtopic.php?t=49980
-    ; other similar sources with some snippets: https://www.autohotkey.com/boards/viewtopic.php?f=76&t=49980&p=387886#p387886 
-
+    ; similar code for autohotkey v2: https://www.autohotkey.com/boards/viewtopic.php?f=76&t=49980&p=387886#p387886 
+    
     ; http://www.daveamenta.com/2011-05/programmatically-or-command-line-change-the-default-sound-playback-device-in-windows-7/
 
     ; initializing this function
+    SetTimer, ProceedChangingSpeakerDevice, Off ;stop the timer if it is already running
     Devices := {}
     IMMDeviceEnumerator := ComObjCreate("{BCDE0395-E52F-467C-8E3D-C4579291692E}", "{A95664D2-9614-4F35-A746-DE8DB63617E6}")
 
@@ -224,7 +158,7 @@ switch_audio_output_device(){
     DllCall(NumGet(NumGet(IMMDeviceEnumerator+0)+3*A_PtrSize), "UPtr", IMMDeviceEnumerator, "UInt", 0, "UInt", 0x1, "UPtrP", IMMDeviceCollection, "UInt")
     ObjRelease(IMMDeviceEnumerator)
 
-    ; get properties (name and ID) of currently active audio output devices
+    ; get properties (like name and ID) of currently active audio output devices
     ; IMMDeviceCollection::GetCount ;(call for legacy autohotkey v1.0)
     DllCall(NumGet(NumGet(IMMDeviceCollection+0)+3*A_PtrSize), "UPtr", IMMDeviceCollection, "UIntP", Count, "UInt")
     Loop % (Count)
@@ -272,7 +206,7 @@ switch_audio_output_device(){
         global output_audio_device_number
         if (output_audio_device_number< num_devices)
         {
-            output_audio_device_number:= output_audio_device_number + 1
+            output_audio_device_number++
         }
         else{
             ; the highest device number is reached, so go back to the lowest number
@@ -283,17 +217,56 @@ switch_audio_output_device(){
         ; MsgBox % Devices2[n]
         
         ; print the name of the new output device
-        MsgBox , ,,% DevicesNames2[output_audio_device_number],1
+        ;MsgBox , ,,% DevicesNames2[output_audio_device_number],1
+        ;TrayTip, New speaker device, % DevicesNames2[output_audio_device_number], 2, 
 
-        ; IPolicyConfig::SetDefaultEndpoint ;(call for legacy autohotkey v1.0)
-        IPolicyConfig := ComObjCreate("{870af99c-171d-4f9e-af0d-e63df40c2bc9}", "{F8679F50-850A-41CF-9C72-430F290290C8}") ;00000102-0000-0000-C000-000000000046 00000000-0000-0000-C000-000000000046
-        R := DllCall(NumGet(NumGet(IPolicyConfig+0)+13*A_PtrSize), "UPtr", IPolicyConfig, "Str", Devices2[output_audio_device_number], "UInt", 0, "UInt")
-        ObjRelease(IPolicyConfig)
-        ; print some hexadecimal number, an address or success/fail state (iguess)
-        ; MsgBox % Format("0x{:08X}", R)
+        ; Gui, +AlwaysOnTop +Disabled -SysMenu +Owner  ; +Owner avoids a taskbar button.
+        ; Gui, Add, Text,, Some text to display.
+        ; Gui, Show, NoActivate, Title of Window  ; NoActivate avoids deactivating the currently active window.
+
+        ; Sleep, 1000
+        ; ExitApp
+
+        ; set the global variable parameter for 'SetAudioOutputDevice()'
+        global output_device_id
+        output_device_id:= Devices2[output_audio_device_number]
+
+        ; display the name of the new output device on the screen
+        WindowTitle:=% DevicesNames2[output_audio_device_number]
+
+        SplashTextOn,,, % WindowTitle
+        WinGetPos,,, Width, Height, % WindowTitle ; get the width and height of the popup window
+        ; put the popup window in the bottom center of the screen
+        WinMove, % WindowTitle,, (A_ScreenWidth/2)-(Width/2), A_ScreenHeight-Height-42
+
+        ; set a timer to call a function with the next steps after 1 second
+        SetTimer, ProceedChangingSpeakerDevice, 1000
     }
     else{
         MsgBox, 0,, No audio output devices found to switch between...
     }
+}
+
+ProceedChangingSpeakerDevice(){
+    ; Turn timer off
+    SetTimer, ProceedChangingSpeakerDevice, Off
+    ; turn the splashtext message off
+    SplashTextOff
+    ; actual changing of the speaker device
+    SetAudioOutputDevice()
+}
+
+SetAudioOutputDevice(){
+    ; sets the output audio device to the given DeviceID
+
+    global output_device_id
+
+    ; IPolicyConfig::SetDefaultEndpoint ;(call for legacy autohotkey v1.0)
+    IPolicyConfig := ComObjCreate("{870af99c-171d-4f9e-af0d-e63df40c2bc9}", "{F8679F50-850A-41CF-9C72-430F290290C8}") ;00000102-0000-0000-C000-000000000046 00000000-0000-0000-C000-000000000046
+    R := DllCall(NumGet(NumGet(IPolicyConfig+0)+13*A_PtrSize), "UPtr", IPolicyConfig, "Str", output_device_id, "UInt", 0, "UInt")
+    ObjRelease(IPolicyConfig)    
+
+    ; print some hexadecimal number, an address or success/fail state (iguess)
+    ; MsgBox % Format("0x{:08X}", R)
 }
 
