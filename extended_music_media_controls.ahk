@@ -101,48 +101,49 @@ toggle_mic_mute(){
     ; mutes/unmutes the microphone for specific appliccations.
     ; supported applications: Discord and MS Teams
     
-    ; source (for most of this functions code): https://github.com/stajp/Teams_mute_AHK/blob/main/mute_teams_standalone.ahk 
-        doAltTab := 0
-        SetTitleMatchMode, 2
-        if WinExist("Discord") {
-            WinGetTitle, active_title, A		 
-            if active_title contains Discord		
-            {
-                Send ^+M		                  
-            }
-            else	   							 
-            {
-                SetTitleMatchMode, 2			  
-                WinActivate, Discord	  
-                Send ^+M		             
-                Sleep 200
-                Send, {AltDown}{Tab}{AltUp}
-                Sleep, 200
-            }
-        }
-        SetTitleMatchMode, 2
-        if if WinExist("Microsoft Teams") {       ; Check if MS Teams is currently opened on this pc
-            WinGetTitle, active_title, A		  ; looks at the active program on your screen and puts it into variable "active_title"
-            if active_title contains Microsoft Teams		; if active program is Teams, move on
-            {
-                Send ^+M		                  ; send CTRL + SHIFT + M for Teams microphone mute on/off
-            }
-            else	   							  ; if active program is not Teams then go to Teams 
-            {
-                SetTitleMatchMode, 2			  ; set Title search to exact
-                WinActivate, Microsoft Teams	  ; bring "Microsoft Teams" to the foreground so the shortcut will work
-                Send ^+M		                  ; send CTRL + SHIFT + M for Teams microphone mute on/off
-                Sleep 200
-                Send, {AltDown}{Tab}{AltUp}
-                Sleep, 200
-            }
-        }
+    ; This function is inspired by part of the work of Stipe Predanić: https://github.com/stajp/Teams_mute_AHK/blob/main/mute_teams_standalone.ahk 
 
-        SetTitleMatchMode, 3 ; reset the match mode to an exact match
+    doAltTab := 0
+    SetTitleMatchMode, 2
+    if WinExist("Discord") {
+        WinGetTitle, active_title, A		 
+        if active_title contains Discord		
+        {
+            Send ^+M		                  
+        }
+        else	   							 
+        {
+            SetTitleMatchMode, 2			  
+            WinActivate, Discord	  
+            Send ^+M		             
+            Sleep 200
+            Send, {AltDown}{Tab}{AltUp}
+            Sleep, 200
+        }
+    }
+    SetTitleMatchMode, 2
+    if if WinExist("Microsoft Teams") {       ; Check if MS Teams is currently opened on this pc
+        WinGetTitle, active_title, A		  ; looks at the active program on your screen and puts it into variable "active_title"
+        if active_title contains Microsoft Teams		; if active program is Teams, move on
+        {
+            Send ^+M		                  ; send CTRL + SHIFT + M for Teams microphone mute on/off
+        }
+        else	   							  ; if active program is not Teams then go to Teams 
+        {
+            SetTitleMatchMode, 2			  ; set Title search to exact
+            WinActivate, Microsoft Teams	  ; bring "Microsoft Teams" to the foreground so the shortcut will work
+            Send ^+M		                  ; send CTRL + SHIFT + M for Teams microphone mute on/off
+            Sleep 200                         
+            Send, {AltDown}{Tab}{AltUp}       ; Alt+Tab to re-activate the window that was active when pressing the mute button 
+            Sleep, 200                         
+        }
+    }
+
+    SetTitleMatchMode, 3 ; reset the match mode to an exact match
 }
 
 switch_audio_output_device(){
-    ;from: https://www.autohotkey.com/boards/viewtopic.php?t=49980
+    ; This function is based on Flipeador, from: https://www.autohotkey.com/boards/viewtopic.php?t=49980
     ; similar code for autohotkey v2: https://www.autohotkey.com/boards/viewtopic.php?f=76&t=49980&p=387886#p387886 
     
     ; http://www.daveamenta.com/2011-05/programmatically-or-command-line-change-the-default-sound-playback-device-in-windows-7/
