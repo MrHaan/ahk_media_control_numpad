@@ -92,7 +92,7 @@ if GetKeyState("ScrollLock", "T"){
     switch_audio_output_device()
 }
 else{
-    Send {NumpadClear}
+    Send, 3
 }
 return
 
