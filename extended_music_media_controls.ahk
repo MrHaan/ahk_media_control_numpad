@@ -20,7 +20,12 @@ if GetKeyState("ScrollLock", "T"){
     Send {Media_Play_Pause}
 }
 else{
-    Send, 5
+    if GetKeyState("NumLock", "T"){    
+        Send, 5
+    }
+    else{
+    Send {NumpadClear}
+    }
 }
 return
 
@@ -30,7 +35,12 @@ if GetKeyState("ScrollLock", "T"){
     Send {Media_Next}
 }
 else{
-    Send, 6
+    if GetKeyState("NumLock", "T"){    
+        Send, 6
+    }
+    else{
+    Send {NumpadRight}
+    }
 }
 return
 
@@ -40,7 +50,12 @@ if GetKeyState("ScrollLock", "T"){
     Send {Media_Prev}
 }
 else{
-    Send, 4
+    if GetKeyState("NumLock", "T"){    
+        Send, 4
+    }
+    else{
+    Send {NumpadLeft}
+    }
 }
 return
 
@@ -51,7 +66,12 @@ if GetKeyState("ScrollLock", "T"){
     Sleep, 69
     }
 else{
-    Send, 8
+    if GetKeyState("NumLock", "T"){    
+        Send, 8
+    }
+    else{
+    Send {NumpadUp}
+    }
 }
 return
 
@@ -62,7 +82,12 @@ if GetKeyState("ScrollLock", "T"){
     Sleep, 69
     }
 else{
-    Send, 2
+    if GetKeyState("NumLock", "T"){    
+        Send, 2
+    }
+    else{
+    Send {NumpadDown}
+    }
 }
 return
 
@@ -72,7 +97,12 @@ if GetKeyState("ScrollLock", "T"){
     Send {Volume_Mute} 
     }
 else{
-    Send, .
+    if GetKeyState("NumLock", "T"){    
+        Send, .
+    }
+    else{
+    Send {NumpadDel}
+    }
 }
 return
 
@@ -82,9 +112,14 @@ Numpad0::
         toggle_mic_mute()
     }
     else{
-    Send, 0
+        if GetKeyState("NumLock", "T"){    
+            Send, 0
+        }
+        else{
+        Send {NumpadIns}
+        }
     }
-    return
+return
 
 NumpadPgdn::
 Numpad3::
@@ -92,7 +127,12 @@ if GetKeyState("ScrollLock", "T"){
     switch_audio_output_device()
 }
 else{
-    Send, 3
+    if GetKeyState("NumLock", "T"){    
+        Send, 3
+    }
+    else{
+    Send {NumpadPgdn}
+    }
 }
 return
 
